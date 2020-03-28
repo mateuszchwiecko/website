@@ -1,0 +1,53 @@
+##########################
+REQUIRED:
+nodejs
+
+
+Required nodejs frameworks:
+Socket.io
+mysql
+expressjs
+
+Recommended:
+Nodemon
+
+
+!if you downloaded the database and imported it into mysql, go to step 13!
+Database Instructions:
+
+1.create a new table named "users"
+2.add 4 columns into table 
+3.name the first column "id" for type "int" and "autoincrement"
+4.next column "nick" for type "text"
+5.name the third column "password" for type "text"
+6.name the fourth column "coins" for type "int"
+-------
+7.create a new table named "bets"
+8.add 4 columns into table
+9.name the first column "userid" for type "int" Without AUTOINCREMENT!
+10.next column "color" for type "text"
+11.name the third column "coins" for type "int"
+12.name the fourth column "nick" for type "text"
+
+13.Now go to app.js  
+14.and search for "var con" or "mysql.createConnection" 
+15.and connect the database with app.js
+
+
+16.Now go to the command line and set the path to app.js
+
+17.and  enter the command to the terminal "npm install"
+
+18.in this you can click enter all the time to continue
+
+19.now install expressjs using the "npm install express --save" command
+
+20.now (if you want) install nodemon using the "npm install -g nodemon" command
+
+21.now install socket.io using the "npm install socket.io" command
+
+22.start the server with "nodemon app.js" ,but here Nodemon is required
+if you don't have it, start the server with "node app.js"
+
+23.go to http://localhost:3000 and start playing
+
