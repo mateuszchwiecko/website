@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>PoleMinowe Lol-bets</title>
+    <link rel="stylesheet" href="css/style.css"/>
+    <link rel="shortcut icon" href="/css/img/ruletka-icon.png">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://kit.fontawesome.com/e8e311daa7.js" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(document).ready(function () {
+var bmbs = 1;
+
+            var socket = io();
+
+            $(".bmb").on("click",function () {
+                bmbs = this.getAttribute("data-myValue")
+                $(".bomb_x1").css("border","none");
+                $(".bomb_x3").css("border","none");
+                $(".bomb_x5").css("border","none");
+                $(".bomb_x24").css("border","none");
+                $(".bomb_x"+bmbs).css("border","2px solid purple");
+
+            })
+            socket.on("infoprint",function(textinfo,cr){
+                if(cr == 'red'){
+                    $(".info").css("background","rgba(255,0,0,0.6)")
+                }
+                else{
+                    $(".info").css("background","-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6))")
+                }
+                $(".info_text").text(textinfo);
+                info();
+            })
+
+            socket.on("zalogowano", function (nick, coins, login, pass) {
+
+                $(".logowanie_rejestracja").css("display", "none")
+                localStorage.setItem("loginstorage", login)
+                localStorage.setItem("passwordstorage", pass)
+                $(".menu_profil").css("display","block");
+                $(".nick_profil").text(nick);
+                $(".coins_profil").html("<img src='css/img/esencja.png' height='40px' width='40px' >" + coins);
+            })
+                if (typeof (Storage) !== "undefined") {
+                    if (localStorage.getItem("loginstorage") !== null) {
+                        socket.emit("zaloguj", localStorage.getItem("loginstorage"), localStorage.getItem("passwordstorage"), 'localstorage')
+                    }
+                }
+
+            $(".logout").on("click",function(){
+                localStorage.removeItem("loginstorage");
+                localStorage.removeItem("passwordstorage");
+                $(".info").css("background","-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6))");
+                $(".info_text").text("Za chwilę wystąpi wylogowanie...")
+                info();
+                setTimeout(function(){
+                    location.reload();
+                },2500)
+
+
+            })
+            $(".play").on("click",function () {
+                socket.emit("graj_Poleminowe",$(".bet_coins").val(),bmbs)
+            })
+            $(".cashout_button").on("click",function () {
+                socket.emit("cashout")
+            })
+            $(".box").on("click",function () {
+                socket.emit("Game_Poleminowe", this.getAttribute("data-myValue"))
+
+            })
+
+            socket.on("options_pminowe",function (nastepnie,razem) {
+                $(".next_win").text("następnie:"+nastepnie)
+                $(".total_coins_win").text("razem:"+razem)
+            })
+
+            socket.on("pokaz_box", function (n) {
+                var esencja = document.createElement("img");
+                esencja.setAttribute("class","zg");
+                esencja.setAttribute("src","css/img/esencja.png");
+                esencja.setAttribute("width","70px");
+                esencja.setAttribute("height","70px");
+
+                    $(".p_"+n).append(esencja)
+                $(".bf_"+n).animate({
+                    opacity:'0',
+                    top:'-50%'
+
+                },1000)
+            })
+            socket.on("refresh_poleminowe",function () {
+                $(".text_history_game").empty();
+
+                for(let i = 1;i<26;i++){
+                    $(".p_"+ i).empty()
+                    let newdiv = document.createElement("div");
+                    newdiv.setAttribute("class","before_box bf_"+i);
+                    newdiv.textContent = i;
+                    $(".p_" + i).append(newdiv);
+                    $(".bf_"+i).css({"opacity":"1","top":"0"})
+
+                }
+
+
+            })
+            socket.on("przegrana",function (b) {
+
+
+    for(let i = 1;i<26;i++) {
+        var bm = 0;
+        $(".p_"+ i).empty()
+        let newdiv = document.createElement("div");
+        newdiv.setAttribute("class","before_box bf_"+i);
+        newdiv.textContent = i;
+        $(".p_" + i).append(newdiv);
+
+        $(".bf_" + i).animate({
+            opacity: '0',
+            top: '-50%'
+
+        }, 1000)
+        for(let n = 0;n<b.length;n++){
+            if(i == b[n]){
+                var esencja = document.createElement("img");
+                esencja.setAttribute("class","zg");
+                esencja.setAttribute("src","css/img/ziggs.png");
+                esencja.setAttribute("width","70px");
+                esencja.setAttribute("height","70px");
+
+                $(".p_"+i).append(esencja)
+                bm = 1;
+                continue;
+            }
+        }
+    if(bm == 0) {
+        var esencja = document.createElement("img");
+        esencja.setAttribute("class", "zg");
+        esencja.setAttribute("src", "css/img/esencja.png");
+        esencja.setAttribute("width", "70px");
+        esencja.setAttribute("height", "70px");
+
+        $(".p_" + i).append(esencja)
+    }
+
+    }
+
+
+            })
+            socket.on("pokazpoleminowe",function (b) {
+
+                for(let i = 1;i<26;i++) {
+                    var bm = 0;
+                    $(".p_"+ i).empty()
+                    let newdiv = document.createElement("div");
+                    newdiv.setAttribute("class","before_box bf_"+i);
+                    newdiv.textContent = i;
+                    $(".p_" + i).append(newdiv);
+
+                    $(".bf_" + i).animate({
+                        opacity: '0',
+                        top: '-50%'
+
+                    }, 1000)
+                    for(let n = 0;n<b.length;n++){
+                        if(i == b[n]){
+                            var esencja = document.createElement("img");
+                            esencja.setAttribute("class","zg");
+                            esencja.setAttribute("src","css/img/ziggs.png");
+                            esencja.setAttribute("width","70px");
+                            esencja.setAttribute("height","70px");
+                            bm = 1;
+                            $(".p_"+i).append(esencja)
+                           continue;
+                        }
+                    }
+                    if(bm == 0){
+                        var esencja = document.createElement("img");
+                        esencja.setAttribute("class","zg");
+                        esencja.setAttribute("src","css/img/esencja.png");
+                        esencja.setAttribute("width","70px");
+                        esencja.setAttribute("height","70px");
+
+                        $(".p_"+i).append(esencja)
+
+                    }
+
+                }
+            })
+            socket.on("refreshcoins",function () {
+                socket.emit("updatecoins");
+            })
+            socket.on("updatecoins", function (data) {
+                $(".coins_profil").html("<img src='css/img/esencja.png' height='40px' width='40px' >" + data)
+            })
+            socket.on("historyinput",function (txt,cr) {
+
+                let newtext = document.createElement("p");
+                newtext.textContent = txt
+                newtext.setAttribute("style","color:"+cr+";left:5px;position:relative;margin:0;text-align:left");
+                $(".text_history_game").append(newtext)
+                let elmnt = document.getElementById("text_history_game")
+                elmnt.scrollTop =  elmnt.scrollHeight;
+
+            })
+            function info() {
+                $(".info").animate({
+                    top:0
+                },500)
+                setTimeout(function(){
+                    $(".info").animate({
+                        top:-50
+                    },500)
+                },2500)
+            }
+
+        })
+
+
+    </script>
+    <script>
+        $(function () {
+            $(".przejdz_do_rejestracji").on("click",function () {
+                $("#rejestracja").css("width","100%")
+            })
+            $(".exit_register").on("click",function () {
+                $("#rejestracja").css("width","0%")
+            })
+        })
+    </script>
+</head>
+<body>
+<div class="info"><p class="info_text"></p></div>
+<div class="menu">
+    <div class="logo"><img src="css/img/ruletka-icon.png" width="60px" height="60px" style="display: flex;margin:0;padding:0;float:left;padding-left:10px;"/><p>Lol-bets</p></div>
+
+<div class="menu_profil">
+
+    <div class="user_info">
+        <img class="head_profil" src="css/img/ornn-head.png" width="50px" height="50px" >
+        <div class="nick_profil"></div>
+        <button class="logout">Logout</button>
+    </div>
+    <div class="coins_profil"></div>
+</div>
+    <div class="logowanie_rejestracja">
+        <div>
+            <a href="/logowanie/logowanie.html" class="zaloguj_">Zaloguj/Zarejestruj</a><br/>
+        </div>
+    </div>
+
+    <nav>
+        <a class="ruletka" href="/index.html" ><i class="fas fa-circle-notch m_fas"></i>Ruletka</a><br/>
+        <a class="poleminowe" href="/poleminowe/poleminowe.html" ><i class="fas fa-bomb m_fas"></i>PoleMinowe<div id="check" style="position:absolute;right:10px;top:0;">O</div></a><br/>
+        <a class="historia" href="/historia/historia.html" ><i class="fas fa-history m_fas"></i>Historia</a>
+        <a class="regulamin" href="/regulamin/regulamin.html" ><i class="fas fa-clipboard m_fas"></i>Regulamin</a>
+    </nav>
+</div>
+
+<div class="main">
+<div class="menu_pole_minowe">
+<div class="menu_options">
+    <input class="bet_coins" type="number" placeholder="ilość esencji" onfocus="this.placeholder = ''" onblur="this.placeholder = 'ilość esencji'">
+    <div class="bomb">
+        <p style="position: absolute;left:10px;margin: 0;top:5px;font-size:18px;color:mediumpurple;">Ilość Bomb</p>
+        <div class="bmb bomb_x1" data-myValue="1">x1</div>
+        <div class="bmb bomb_x3" data-myValue="3">x3</div>
+        <div class="bmb bomb_x5" data-myValue="5">x5</div>
+        <div class="bmb bomb_x24" data-myValue="24">x24</div>
+    </div>
+    <div class="cashout">
+        <p class="total_coins_win">razem:0</p>
+        <p class="next_win">następnie:0</p>
+        <button class="cashout_button">Wypłać</button>
+    </div>
+    <div class="history_game"><p style="position:absolute;left:5px;margin:0;top:5px;color:mediumpurple">historia gry...</p><br/>
+    <div class="text_history_game" id="text_history_game">
+
+
+    </div>
+
+    </div>
+</div>
+    <button class="play">Graj</button>
+</div>
+
+
+    <div class="container">
+       <div class="game_poleminowe">
+           <div class="row_1">
+               <div class="box p_1" data-myValue="1"><div class="before_box bf_1" data-myValue="1">1</div></div>
+               <div class="box p_2" data-myValue="2"><div class="before_box bf_2" data-myValue="2">2</div></div>
+               <div class="box p_3" data-myValue="3"><div class="before_box bf_3" data-myValue="3">3</div></div>
+               <div class="box p_4" data-myValue="4"><div class="before_box bf_4" data-myValue="4">4</div></div>
+               <div class="box p_5" data-myValue="5"><div class="before_box bf_5" data-myValue="5">5</div></div>
+           </div>
+           <div class="row_2">
+               <div class="box p_6" data-myValue="6"><div class="before_box bf_6" data-myValue="6">6</div></div>
+               <div class="box p_7" data-myValue="7"><div class="before_box bf_7" data-myValue="7">7</div></div>
+               <div class="box p_8" data-myValue="8"><div class="before_box bf_8" data-myValue="8">8</div></div>
+               <div class="box p_9" data-myValue="9"><div class="before_box bf_9" data-myValue="9">9</div></div>
+               <div class="box p_10" data-myValue="10"><div class="before_box bf_10" data-myValue="10">10</div></div>
+           </div>
+           <div class="row_3">
+               <div class="box p_11" data-myValue="11"><div class="before_box bf_11" data-myValue="11">11</div></div>
+               <div class="box p_12" data-myValue="12"><div class="before_box bf_12" data-myValue="12">12</div></div>
+               <div class="box p_13" data-myValue="13"><div class="before_box bf_13" data-myValue="13">13</div></div>
+               <div class="box p_14" data-myValue="14"><div class="before_box bf_14" data-myValue="14">14</div></div>
+               <div class="box p_15" data-myValue="15"><div class="before_box bf_15" data-myValue="15">15</div></div>
+           </div>
+           <div class="row_4">
+               <div class="box p_16" data-myValue="16"><div class="before_box bf_16" data-myValue="16">16</div></div>
+               <div class="box p_17" data-myValue="17"><div class="before_box bf_17" data-myValue="17">17</div></div>
+               <div class="box p_18" data-myValue="18"><div class="before_box bf_18" data-myValue="18">18</div></div>
+               <div class="box p_19" data-myValue="19"><div class="before_box bf_19" data-myValue="19">19</div></div>
+               <div class="box p_20" data-myValue="20"><div class="before_box bf_20" data-myValue="20">20</div></div>
+           </div>
+           <div class="row_5">
+               <div class="box p_21" data-myValue="21"><div class="before_box bf_21" data-myValue="21">21</div></div>
+               <div class="box p_22" data-myValue="22"><div class="before_box bf_22" data-myValue="22">22</div></div>
+               <div class="box p_23" data-myValue="23"><div class="before_box bf_23" data-myValue="23">23</div></div>
+               <div class="box p_24" data-myValue="24"><div class="before_box bf_24" data-myValue="24">24</div></div>
+               <div class="box p_25" data-myValue="25"><div class="before_box bf_25" data-myValue="25">25</div></div>
+           </div>
+       </div>
+    </div>
+</div>
+</body>
+</html>

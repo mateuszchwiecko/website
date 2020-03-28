@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logowanie</title>
+    <link rel="shortcut icon" href="css/img/ruletka-icon.png">
+    <link rel="stylesheet" href="css/style.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(function () {
+            var socket = io()
+
+            socket.on("infoprint", function (textinfo, cr) {
+                if (cr == 'red') {
+                    $(".info").css("background", "rgba(255,0,0,0.6)")
+                } else {
+                    $(".info").css("background", "-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6))")
+                }
+                $(".info_text").text(textinfo);
+                info();
+            })
+            $(".rejestruj_submit").click(function () {
+                var chk;
+                var login = $(".login_r").val();
+                var pass = $(".password_r").val();
+                var rep_pass = $(".password_r2").val();
+                var check = document.getElementById("checkbox").checked;
+                if(check == true){
+                    chk = 'true'
+                }
+                if(check == false){
+                    chk = 'false'
+                }
+
+                socket.emit("zarejestruj", login,pass,rep_pass,chk)
+
+            })
+            socket.on("refresh_register",function(){
+                setTimeout(function(){
+                    location.reload();
+                },2500)
+            })
+
+
+
+
+            $(".zaloguj_submit").on("click", function () {
+                var login = $(".login").val();
+                var pass = $(".password").val();
+
+
+                socket.emit("zaloguj", login, pass)
+
+            })
+
+
+            socket.on("zalogowano", function (nick, coins, login, pass) {
+                $(".logowanie").css("display", "none")
+                $(".przejdz_do_rejestracji").css("display", "none")
+                localStorage.setItem("loginstorage", login)
+                localStorage.setItem("passwordstorage", pass)
+                $("#profil").css("display", "block");
+                $(".nick_profil").text("Witaj! " + nick);
+                $(".coins_profil").text("coinsy: " + coins);
+                setTimeout(function () {
+                    window.location.href = "/";
+                },1500)
+
+
+            })
+
+            function info() {
+                $(".info").animate({
+                    top:0
+                },500)
+                setTimeout(function(){
+                    $(".info").animate({
+                        top:-50
+                    },500)
+                },2500)
+            }
+
+        })
+</script>
+
+</head>
+        <body>
+        <div class="info"><p class="info_text"></p></div>
+<a href="/"><div class="back"><img src="css/img/ruletka-icon.png" width="100px" height="100px" style="opacity:0.6"> </div></a>
+        <div class="wybierz">
+            <div class="w_logowanie">Logowanie</div>
+            <div class="w_rejestracja">Rejestracja</div>
+            <span class="wskaznik"></span>
+        </div>
+        <div class="ln_rr">
+<div class="logowanie">
+    <h1 class="ng_log" style="width:100%;background: rgba(110,0,120,0.5);position: absolute;top:0;margin:0;font-family: Arial;font-weight:600;color:mediumpurple;backface-visibility: hidden;">Logowanie</h1>
+    <input class="login" placeholder="login" onfocus="this.placeholder=''" onblur="this.placeholder = 'login'" >
+    <input class="password" type="password" placeholder="hasło" onfocus="this.placeholder=''" onblur="this.placeholder = 'hasło'" >
+    <input type="submit" value="zaloguj" class="zaloguj_submit">
+</div>
+        <div class="rejestracja">
+            <h1 style="width:100%;background: rgba(110,0,120,0.5);position: absolute;top:0;margin:0;font-family: Arial;font-weight:600;color:mediumpurple">Rejestracja</h1>
+            <input class="login_r" placeholder="login" onfocus="this.placeholder=''" onblur="this.placeholder = 'login'" >
+            <input class="password_r" type="password" placeholder="hasło" onfocus="this.placeholder=''" onblur="this.placeholder = 'hasło'" >
+            <input class="password_r2" type="password" placeholder="powtórz hasło" onfocus="this.placeholder=''" onblur="this.placeholder = 'powtórz hasło'" >
+            <label ><div class="checkbox_container"><input type="checkbox" class="checkbox_akceptuje_regulamin" id="checkbox"><a href="/regulamin/regulamin.html" style="color:Blue">Akceptuję regulamin</a></div></label>
+            <input type="submit" value="zarejestruj" class="rejestruj_submit">
+        </div>
+        </div>
+        <script>
+            $(function(){
+                $(".w_logowanie").on("click",function(){
+                    $(".ln_rr").css("transform","rotateX(0deg)")
+                    $(".wskaznik").css("left","0px")
+                })
+                $(".w_rejestracja").on("click",function(){
+                    $(".ln_rr").css("transform", "rotateX(180deg)")
+                    $(".wskaznik").css("left","145px")
+                })
+            })
+        </script>
+            </body>
+            </html>

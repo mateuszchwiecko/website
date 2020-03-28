@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia Losowań</title>
+    <link rel="shortcut icon" href="css/img/ruletka-icon.png">
+    <link rel="stylesheet" href="css/style.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        $(function () {
+            const socket = io();
+            refresh_history();
+            function refresh_history() {
+                socket.emit("refresh_history")
+            }
+            socket.on("refresh_history",function () {
+                location.reload();
+            })
+            socket.on("updatehistory", function (history) {
+
+
+
+
+                var lgth = history.length;
+                if (lgth <= 12) {
+                    for (var i = lgth - 1; i > -1; i--) {
+
+                        if(history[i].colorroll == 'black'){
+                            var srcatr =  "css/img/aatrox-head.png"
+                        }
+                        if(history[i].colorroll == "red"){
+                            var srcatr =  "css/img/ornn-head.png"
+                        }
+                        if(history[i].colorroll == "green"){
+                            var srcatr =  "css/img/zac-head.png"
+                        }
+
+                        var trr = document.createElement("tr")
+                        var tdid = document.createElement("td")
+                        tdid.textContent = history[i].idroll;
+                        var tdhash = document.createElement("td");
+                        tdhash.textContent = history[i].hashroll;
+                        var tdkolor = document.createElement("td");
+                        var img = document.createElement("img")
+                        img.setAttribute("src",srcatr)
+                        img.setAttribute("height","35px")
+                        img.setAttribute("width","35px")
+                        tdkolor.appendChild(img)
+                        var tddate = document.createElement("td");
+                        tddate.textContent = history[i].dateroll;
+                        trr.appendChild(tdid)
+                        trr.appendChild(tdhash)
+                        trr.appendChild(tdkolor)
+                        trr.appendChild(tddate)
+                        $(".history").append(trr)
+
+                    }
+                } else {
+                    var index = history.length - 12;
+                    for (var i = lgth - 1; i > index; i--) {
+                        if(history[i].colorroll == 'black'){
+                            var srcatr =  "css/img/aatrox-head.png"
+                        }
+                        if(history[i].colorroll == "red"){
+                            var srcatr =  "css/img/ornn-head.png"
+                        }
+                        if(history[i].colorroll == "green"){
+                            var srcatr =  "css/img/zac-head.png"
+                        }
+
+                        var trr = document.createElement("tr")
+                        var tdid = document.createElement("td")
+                        tdid.textContent = history[i].idroll;
+                        var tdhash = document.createElement("td");
+                        tdhash.textContent = history[i].hashroll;
+                        var tdkolor = document.createElement("td");
+                        var img = document.createElement("img")
+                        img.setAttribute("src",srcatr)
+                        img.setAttribute("height","35px")
+                        img.setAttribute("width","35px")
+                        tdkolor.appendChild(img)
+                        var tddate = document.createElement("td");
+                        tddate.textContent = history[i].dateroll;
+                        trr.appendChild(tdid)
+                        trr.appendChild(tdhash)
+                        trr.appendChild(tdkolor)
+                        trr.appendChild(tddate)
+                        $(".history").append(trr)
+                    }
+                }
+
+            })
+
+            socket.on("zalogowano", function (nick, coins, login, pass) {
+
+                $(".logowanie_rejestracja").css("display", "none")
+                localStorage.setItem("loginstorage", login)
+                localStorage.setItem("passwordstorage", pass)
+                $(".menu_profil").css("display","block");
+                $(".nick_profil").text("Witaj! "+ nick);
+                $(".coins_profil").text("coinsy: " + coins);
+
+
+            })
+
+            if (typeof (Storage) !== "undefined") {
+                if (localStorage.getItem("loginstorage").length > 0) {
+                    socket.emit("zaloguj",localStorage.getItem("loginstorage"),localStorage.getItem("passwordstorage"),'localstorage')
+                }
+
+            }
+        })
+    </script>
+
+</head>
+<body>
+<div id="main">
+<container>
+    <div class="container_nav">
+        <div class="nav">
+            <a href="/">Ruletka</a>
+            <a href="/kolkoikrzyzyk">KolkoIKrzyzyk</a>
+            <a href="/poleminowe/poleminowe.html">PoleMinowe</a>
+        </div>
+    </div>
+</container>
+<div class="container_nav_bt">
+<div class="nav_bt">
+    <div class="nv1"></div>
+    <div class="nv2"></div>
+    <div class="nv3"></div>
+    <div class="nv4"></div>
+</div>
+</div>
+
+<div class="container_history_roll">
+    <h1 class="naglowek_historia">Historia Losowań</h1>
+    <table class="history">
+        <tr>
+            <th>ID</th>
+        <th>Hash</th>
+        <th>Kolor</th>
+        <th>Data</th>
+        </tr>
+
+    </table>
+</div>
+
+<script>
+    var on_off = 0;
+    $('.container_nav_bt').click(function () {
+
+        if(on_off == 1){
+            $('.container_nav').css("transform","rotate(0deg)")
+            $(".nv2").css({'left': "0%",'opacity': "1","transform": "rotate(0deg)"})
+            $(".nv3").css({'left': "50%",'opacity': "1","transform": "rotate(0deg)"})
+            $(".nv1").css({'position': "relative",'top': "0","transform": "rotate(0deg)"})
+            $(".nv4").css({'position': "relative",'bottom': "0","transform": "rotate(0deg)"})
+            on_off = 0
+        }
+        else{
+            $('.container_nav').css("transform","rotate(-7deg)")
+            $(".nv2").css({'left': "-30%",'opacity': "0","transform": "rotate(90deg)"})
+            $(".nv3").css({'left': "80%",'opacity': "0","transform": "rotate(-90deg)"})
+            $(".nv1").css({'position': "absolute",'top': "0","transform": "rotate(40deg)"})
+               $(".nv4").css({'position': "absolute",'bottom': "0","transform": "rotate(-40deg)"})
+            on_off = 1
+        }
+
+    })
+
+
+</script>
+</div>
+</body>
+</html>

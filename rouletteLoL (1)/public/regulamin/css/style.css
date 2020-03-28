@@ -1,0 +1,20 @@
+body{
+    background-image: url("img/background_image.jpg");
+    background-size: cover;
+    overflow: hidden;
+
+}
+.regulamin{
+    position: absolute;
+    width:1000px;
+    height:100%;
+    text-align: center;
+    top:0;
+    background: rgba(100,0,150,.4);
+    margin:auto;
+    left:0;
+    right:0;
+    border-radius: 20px;
+    color:white;
+    font-family: cursive,arial,sans-serif;
+}

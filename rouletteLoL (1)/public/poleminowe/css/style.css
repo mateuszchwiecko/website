@@ -1,0 +1,587 @@
+body{
+    background-image: url("img/background_image.jpg");
+    background-size: cover;
+    overflow: hidden;
+
+}
+.info{
+    position: absolute;
+    top:-50px;
+    width:300px;
+    height:50px;
+    background:-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6));
+    border-bottom-left-radius:20px;
+    border-bottom-right-radius:20px;
+    margin:auto;
+    left:0;
+    right:0;
+    z-index: 1;
+    font-family:cursive,Arial,sans-serif;
+    color:white;
+    display:table;
+
+
+
+}
+
+.info_text{
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+#profil{
+    position: absolute;
+    display: none;
+    right:0;
+    float:left;
+
+
+
+}
+.nick_profil{
+    position:absolute;
+    font-family: cursive,Arial,sans-serif;
+    color:mediumpurple;
+    font-size:20px;
+    display:flex;
+    cursor:pointer;
+    transition:0.5s;
+    margin:0;
+    padding: 0;
+    padding-left: 10px;
+    top:5px;
+    left:50px;
+
+}
+
+.coins_profil{
+    position: relative;
+    font-family: cursive,arial,sans-serif;
+    color: #cc33ff;
+    font-size:18px;
+    top:70px;
+    width:200px;
+    height:30px;
+    display: flex;
+    background:rgba(115, 57, 172,.8);
+    justify-content: center;
+    align-items: center;
+    transition: 0.5s;
+
+
+}
+.coins_profil:hover{
+    font-size:15px;
+    cursor: pointer;
+
+}
+.logout{
+    position: absolute;
+    top:30px;
+    left:60px;
+    background: none;
+    border:none;
+    border-bottom:2px solid purple;
+    color:white;
+    font-family: cursive,Arial,sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    transition: 0.5s;
+}
+
+.logout:hover{
+    font-size:16px;
+}
+.menu_profil{
+    position: absolute;
+    z-index: 1;
+    display: none;
+
+
+}
+.profil_info{
+    background: -webkit-linear-gradient(top right,rebeccapurple,#7339ac);
+    opacity: 0.8;
+
+}
+
+.user_info{
+    position: absolute;
+    width:300px;
+    opacity: 1;
+    margin:auto;
+    border-radius:10px;
+
+
+}
+.head_profil{
+    position: relative;
+    left:10px;
+    top:10px;
+
+}
+
+.main{
+    position:absolute;
+    width:100%;
+    height: 600px;
+    background: rgba(102, 51, 153,0.8);
+    left:0;
+
+}
+.menu_pole_minowe{
+    position: absolute;
+    float: right;
+    margin: auto;
+    top:0;
+    bottom:0;
+    right:50px;
+    width:300px;
+    height: 500px;
+    text-align: center;
+}
+.menu_options{
+    position:relative;
+    float: right;
+    margin: auto;
+    top:0;
+    left:0;
+    right:50px;
+    width:100%;
+    height: 430px;
+    background: rgba(51, 0, 102,.3);
+    box-shadow: 0px 0px 5px 0px black;
+
+}
+.container{
+    position: absolute;
+    margin: auto;
+    width: 730px;
+    height: 500px;
+    top:0;
+    bottom:0;
+    left:250px;
+    background: rgba(51, 0, 102,.3);
+    box-shadow: 0px 0px 5px 0px black;
+
+}
+
+.play{
+width:100%;
+    height: 70px;
+    font-size:45px;
+    font-weight: bold;
+    font-family: cursive,Arial,sans-serif;
+    margin: 0 auto;
+    vertical-align: middle;
+    background:rgba(115, 0, 153,.6);
+    border: none;
+    color:mediumpurple;
+    cursor: pointer;
+    outline: none;
+
+
+}
+.play:active{
+    width:90%;
+    height:50px;
+    font-size: 30px;
+}
+.logowanie_rejestracja{
+    position:relative;
+    width:100%;
+    height: 109px;
+    float: right;
+    display:flex;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+
+
+}
+.przejdz_do_rejestracji{
+    text-decoration: underline;
+    color: purple;
+    background: rgba(51, 0, 102,0.6);
+    cursor: pointer;
+    margin-top:10px;
+    text-align: center;
+    padding:5px;
+    box-shadow: 0px 0px 10px 0px black;
+
+
+
+}
+
+.zaloguj_{
+    text-decoration: underline;
+    color: purple;
+    background: rgba(51, 0, 102,0.6);
+    cursor: pointer;
+    padding:5px;
+    box-shadow: 0px 0px 5px 0px black;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+.menu{
+    position: absolute;
+    width:200px;
+    height:100%;
+    background:rgba(115, 0, 153,.5);
+    z-index: 1;
+    top:0;
+    left:0;
+
+}
+.fas{
+    position: absolute;
+    float: left;
+    left:10px;
+    font-size:28px;
+}
+
+.logo{
+    position: relative;
+    width:100%;
+    height:60px;
+    display: flex;
+    align-items: center;
+    top:0;
+    background:rgba(92, 0, 153,0.6);
+    padding: 5px;
+    padding-right:0;
+    padding-left:0;
+    box-shadow: 0px 0px 4px 0px black;
+
+
+}
+.logo p{
+    float: right;
+    font-size:33px;
+    color: mediumpurple;
+    font-family:arial,sans-serif;
+}
+nav{
+    position: relative;
+    top:100px;
+    width:100%;
+    height:300px;
+
+
+
+}
+nav a{
+    position: absolute;
+    color: mediumpurple;
+    width: 100%;
+    height:30px;
+    background:rgb(122, 0, 150);
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    font-size:21px;
+    font-family:arial,sans-serif;
+    border-top:2px solid purple;
+    border-bottom:2px solid purple;
+}
+.ruletka{
+    top:10px;
+}
+.historia{
+    top:80px;
+}
+.regulamin{
+    top:115px;
+}
+.poleminowe{
+    top:45px;
+}
+.game_poleminowe{
+    position: absolute;
+    margin: auto;
+    left:0;
+    right:0;
+    width:95%;
+    height: 95%;
+    top:2.5%;
+}
+.row_1,.row_2,.row_3,.row_4,.row_5{
+    position: relative;
+    display: flex;
+    width:100%;
+    height:20%;
+}
+.box{
+    width:19%;
+    margin: 0.5%;
+  background: #7339ac;
+    cursor: pointer;
+    border: 2px solid purple;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.before_box{
+    position: relative;
+    width:85%;
+    height:85%;
+    background: rgb(110,0,140);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color:rgba(50,0,120,.4);
+    font-size:32px;
+    z-index: 1;
+
+}
+.history_game{
+    position: absolute;
+    width:97%;
+    left:1.8%;
+    height:150px;
+    background:rgba(110,40,170,.5);
+    bottom:5px;
+    box-shadow: 0px 0px 3px 0px black;
+    overflow: auto;
+    overflow-x:hidden;
+    margin:0;
+
+}
+.bomb_x1{
+    border:2px solid purple;
+}
+.history_game::-webkit-scrollbar-thumb{
+    background: purple;
+    border-radius: 20px;
+}
+.history_game::-webkit-scrollbar{
+    background: #7339ac;
+}
+.cashout{
+    position: absolute;
+    width:97%;
+    margin: auto;
+    left:0;
+    right:0;
+    height:75px;
+    bottom:160px;
+    background:rgba(110,40,170,.5);
+    box-shadow: 0px 0px 3px 0px black;
+
+}
+.bet_coins{
+    width:95%;
+    height:40px;
+    background: #730099;
+    border: none;
+    box-shadow: 0px 0px 3px 0px black;
+    padding-left:10px;
+    font-size:16px;
+    font-family:cursive, arial,sans-serif;
+    color: mediumpurple;
+}
+.total_coins_win{
+    position: absolute;
+    left:10px;
+    top:5px;
+    margin: 0;
+    font-size:20px;
+    color: mediumpurple;
+}
+.next_win{
+    position: absolute;
+    left:135px;
+    top:5px;
+    margin: 0;
+    font-size:20px;
+    color: mediumpurple;
+}
+.zg{
+position: absolute;
+
+}
+.cashout_button{
+    position:absolute;
+    margin: auto;
+    left:0;
+    right:0;
+    bottom:10px;
+    width:95%;
+    height:30px;
+    background:rgb(122, 0, 150);
+    border: none;
+    color: mediumpurple;
+    font-family: cursive,Arial,sans-serif;
+    font-size: 17px;
+    cursor: pointer;
+    outline: none;
+    box-shadow: 0px 0px 3px 0px black;
+
+}
+.cashout_button:hover{
+    width: 98%;
+    height: 34px;
+
+}
+.cashout_button:active{
+    width: 93%;
+    height: 25px;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-apperance:none;
+    margin: 0;
+}
+.bomb{
+    position: absolute;
+    top:53px;
+    width:95%;
+    height: 130px;
+    margin: auto;
+    left:0;
+    right:0;
+    background:rgba(110,40,170,.6);
+    box-shadow: 0px 0px 3px 0px black;
+    font-family: cursive, Arial, sans-serif;
+    display: flex;
+}
+.bomb > div{
+    margin-top:60px;
+    margin-left: 15px;
+    width:30px;
+    height: 30px;
+    background: #8040bf;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: purple;
+    box-shadow: 0px 0px 3px 0px black;
+    cursor: pointer;
+}
+.bomb > div:hover{
+    width: 35px;
+    height: 35px;
+    margin-left: 10px;
+    margin-top:55px;
+}
+.text_history_game{
+    position: absolute;
+    top:25px;
+    bottom:0;
+    height:110px;
+    width:100%;
+    overflow:auto;
+    overflow-x: hidden;
+
+}
+.text_history_game::-webkit-scrollbar-thumb{
+    background: purple;
+    border-radius: 20px;
+    width:0;
+}
+.text_history_game::-webkit-scrollbar{
+    background: #7339ac;
+    width:0;
+}
+.text_history_game > p{
+    position: relative;
+    margin:0;
+    text-align: left;
+    margin-left:5px;
+}
+
+@media (max-width: 1126px){
+    .menu{
+        width:130px;
+
+    }
+    #check{
+        display: none;
+    }
+    .m_fas{
+        display: none;
+        opacity:0;
+    }
+    .coins_profil{
+        width:130px;
+    }
+}
+@media(max-width: 1330px) and (min-height: 828px){
+  .main {
+      height: 790px;
+  }
+    .container{
+        width: 729px;
+        top: 30px;
+        margin: 0;
+        left: 200px;
+    }
+    .menu_pole_minowe{
+        width: 730px;
+        margin: 0;
+        left: 200px;
+        height: 230px;
+        top: 550px;
+        overflow: hidden;
+    }
+    .menu_options{
+        height: 160px;
+    }
+    .history_game{
+        width: 35%;
+        margin: 0;
+    }
+    .bomb{
+        width: 33%;
+        margin: 0;
+        position: absolute;
+        left: 272px;
+        height: 102px;
+    }
+
+    .bet_coins{
+        position: absolute;
+        width: 31.5%;
+        margin: 0;
+        left: 272px;
+    }
+    .cashout{
+        position: absolute;
+        left: 525px;
+        width: 26%;
+        height: 95%;
+        margin: 0;
+        bottom: 5px;
+    }
+    .cashout > p {
+        display: block;
+        left:10px;
+
+    }
+
+    .next_win{
+        top:50px;
+    }
+
+}

@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ruletka Lol-bets</title>
+
+    <link rel="shortcut icon" href="/css/img/ruletka-icon.png">
+    <link rel="stylesheet" href="css/style.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://kit.fontawesome.com/e8e311daa7.js" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        $(function () {
+            var socket = io();
+            document.getElementById("messages").scrollTo(0,document.getElementById("messages").scrollHeight)
+            socket.on("users_online",function (users) {
+                $(".chat_header").text("Chat online("+users+")")
+            })
+            $(".logout").on("click",function(){
+                localStorage.removeItem("loginstorage");
+                localStorage.removeItem("passwordstorage");
+                $(".info").css("background","-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6))");
+                $(".info_text").text("Za chwilę wystąpi wylogowanie...")
+                info();
+                setTimeout(function(){
+                    location.reload();
+                },2500)
+
+
+            })
+            socket.on("infoprint",function(textinfo,cr,push){
+                if(push == "push"){
+                $(".notify_circle").css("display","flex")
+                }
+                if(cr == 'red'){
+                    $(".info").css("background","rgba(255,0,0,0.6)")
+                }
+                else{
+                    $(".info").css("background","-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6))")
+                }
+                $(".info_text").text(textinfo);
+                info();
+            })
+            socket.on("losowanie", function (data) {
+                $("#timer").text(data)
+            })
+            socket.on("ruletka", function (nm,ps) {
+                $("#items").css("background-position-x","0px")
+                var pos = nm + "px"
+                $("#items").animate({
+                    'background-position-x':pos
+                },parseInt(ps))
+            })
+            socket.on("updatelist", function (lista) {
+                $("#lista").empty()
+                var lgth = lista.length;
+                if (lgth <= 8) {
+                    for (var i = lgth - 1; i > -1; i--) {
+                        var close = "/>";
+                        var txt = "<img class='item " + lista[i].color +
+                            "' src='" + lista[i].img + "' width='" + lista[i].width + "' height='" + lista[i].height + "' " + close;
+                        $("#lista").append(txt)
+                    }
+                } else {
+                    var index = lista.length - 9;
+                    for (var i = lgth - 1; i > index; i--) {
+                        var close = "/>";
+                        var txt = "<img class='item " + lista[i].color +
+                            "' src='" + lista[i].img + "' width='" + lista[i].width + "' height='" + lista[i].height + "' " + close;
+                        $("#lista").append(txt)
+                    }
+                }
+
+            })
+           /* socket.on("dzwiek", function (srcsound) {
+                $(".audio").empty()
+
+                function sound(src) {
+                    this.sound = document.createElement("audio");
+                    this.sound.src = src;
+                    this.sound.setAttribute("autoplay", "autoplay");
+                    $(".audio").append(this.sound);
+                }
+
+                var soundserver = new sound(srcsound);
+            })
+*/
+            socket.on("zalogowano", function (nick, coins, login, pass) {
+
+                $(".logowanie_rejestracja").css("display", "none")
+                localStorage.setItem("loginstorage", login)
+                localStorage.setItem("passwordstorage", pass)
+                $(".menu_profil").css("display","block");
+                $(".nick_profil").text(""+ nick);
+                $(".coins_profil").html("<img src='css/img/esencja.png' height='40px' width='40px' > " + coins);
+
+
+            })
+
+            $(".obstaw_red").click(function () {
+                var coins = $(".obstaw_ilosc").val();
+                var coinsp = parseInt(coins)
+                if(coinsp < 100000000) {
+                    socket.emit("obstaw", coinsp, 'red', 2)
+                }
+            })
+
+            $(".obstaw_green").click(function () {
+                var coins = $(".obstaw_ilosc").val();
+                var coinsp = parseInt(coins)
+                if(coinsp < 100000000) {
+                    socket.emit("obstaw", coinsp, 'green', 14)
+                }
+            })
+
+            $(".obstaw_black").click(function () {
+                var coins = $(".obstaw_ilosc").val();
+                var coinsp = parseInt(coins)
+                if(coinsp < 100000000) {
+                    socket.emit("obstaw", coinsp, 'black', 2)
+                }
+
+            })
+
+            socket.on("updatecoins", function (data) {
+                $(".coins_profil").html("<img src='css/img/esencja.png' height='40px' width='40px' >" + data)
+            })
+            socket.on("refresh_bets", function (totalred, totalgreen, totalblack, coins_red, coins_green, coins_black, wylosowano, kolor) {
+
+                if (wylosowano == "wylosowano") {
+                    if (kolor == "red") {
+                        $(".all_on_red").text(totalred + " łącznie")
+                        $(".coins_on_red").text("coinsy: +" + coins_red)
+                        $(".all_on_red").css("color", "green");
+                        $(".coins_on_red").css("color", "green")
+                        $(".all_on_green").text(totalgreen + " łącznie")
+                        $(".coins_on_green").text("coinsy: -" + coins_green)
+                        $(".all_on_green").css("color", "red");
+                        $(".coins_on_green").css("color", "red")
+                        $(".all_on_black").text(totalblack + " łącznie")
+                        $(".coins_on_black").text("coinsy: -" + coins_black)
+                        $(".all_on_black").css("color", "red");
+                        $(".coins_on_black").css("color", "red");
+                        $(".bet_coinsy").css("color","green");
+                        $(".bet_coinsy_black").css("color","red");
+                        $(".bet_coinsy_red").css("color","green");
+                        $(".bet_coinsy_green").css("color","red");
+
+                    }
+                    if (kolor == "green") {
+                        $(".all_on_green").text(totalgreen + " łącznie")
+                        $(".coins_on_green").text("coinsy: +" + coins_green)
+                        $(".all_on_green").css("color", "green");
+                        $(".coins_on_green").css("color", "green")
+                        $(".all_on_red").text(totalred + " łącznie")
+                        $(".coins_on_red").text("coinsy: -" + coins_red)
+                        $(".all_on_red").css("color", "red");
+                        $(".coins_on_red").css("color", "red")
+                        $(".all_on_black").text(totalblack + " łącznie")
+                        $(".coins_on_black").text("coinsy: -" + coins_black)
+                        $(".all_on_black").css("color", "red");
+                        $(".coins_on_black").css("color", "red")
+                        $(".bet_coinsy_black").css("color","red");
+                        $(".bet_coinsy_red").css("color","red");
+                        $(".bet_coinsy_green").css("color","green");
+
+                    }
+                    if (kolor == "black") {
+
+                        $(".all_on_black").text(totalblack + " łącznie")
+                        $(".coins_on_black").text("coinsy: +" + coins_black)
+                        $(".all_on_black").css("color", "green");
+                        $(".coins_on_black").css("color", "green")
+                        $(".all_on_green").text(totalgreen + " łącznie")
+                        $(".coins_on_green").text("coinsy: -" + coins_green)
+                        $(".all_on_green").css("color", "red");
+                        $(".coins_on_green").css("color", "red")
+                        $(".all_on_red").text(totalred + " łącznie")
+                        $(".coins_on_red").text("coinsy: -" + coins_red)
+                        $(".all_on_red").css("color", "red");
+                        $(".coins_on_red").css("color", "red")
+                        $(".bet_coinsy_black").css("color","green");
+                        $(".bet_coinsy_red").css("color","red");
+                        $(".bet_coinsy_green").css("color","red");
+
+
+                    }
+                } else {
+                    $(".all_on_red").text(totalred + " łącznie")
+                    $(".all_on_green").text(totalgreen + " łącznie")
+                    $(".all_on_black").text(totalblack + " łącznie")
+                    $(".coins_on_red").text("coinsy: " + coins_red)
+                    $(".coins_on_green").text("coinsy: " + coins_green)
+                    $(".coins_on_black").text("coinsy: " + coins_black)
+                    $(".all_on_red").css("color", "#d24dff");
+                    $(".coins_on_red").css("color", "#d24dff")
+                    $(".all_on_green").css("color", "#d24dff");
+                    $(".coins_on_green").css("color", "#d24dff")
+                    $(".all_on_black").css("color", "#d24dff");
+                    $(".coins_on_black").css("color", "#d24dff")
+                    $(".bet_coinsy_black").css("color","white");
+                    $(".bet_coinsy_red").css("color","white");
+                    $(".bet_coinsy_green").css("color","white");
+
+                }
+            })
+            socket.on("refreshcoins",function () {
+                socket.emit("updatecoins");
+            })
+
+            socket.on("answer_message",function(nick,mess,ck){
+                var messagediv = document.createElement("div");
+                messagediv.setAttribute("class","message")
+                        var imge = document.createElement("img");
+                                imge.setAttribute("class","icon_message");
+                imge.setAttribute("src","css/img/ornn-head.png")
+                        imge.setAttribute("width","40px")
+                                imge.setAttribute("height","40px")
+                                        var datediv = document.createElement("div")
+                                                datediv.setAttribute("class","date_message");
+                                        datediv.textContent = ck;
+                var nickdiv = document.createElement("div")
+                        nickdiv.setAttribute("class","nick_message")
+                                nickdiv.textContent = nick;
+                var messp = document.createElement("p")
+                        messp.setAttribute("class","text_message")
+                                messp.textContent = mess;
+                messagediv.appendChild(imge)
+                messagediv.appendChild(datediv)
+                messagediv.appendChild(nickdiv)
+                messagediv.appendChild(messp)
+                $(".messages").append(messagediv)
+                document.getElementById("messages").scrollTo(0,document.getElementById("messages").scrollHeight)
+
+            })
+
+            socket.on("hash",function (hash) {
+                $(".hash").text("Hash:"+hash);
+            })
+            socket.on("emptybets",function () {
+                $(".bety_black,.bety_green,.bety_red").empty();
+            })
+
+            socket.on("refresh_bets_list",function(nick,coins,color,lngth,newbet){
+                if(lngth == 0){
+                    $(".bety_black,.bety_green,.bety_red").empty();
+                }
+                else {
+
+                    var esenc = document.createElement("img")
+                    esenc.setAttribute("src","css/img/esencja.png")
+                    esenc.setAttribute("height","20px")
+                    esenc.setAttribute("width","20px")
+                    esenc.setAttribute("style","position:relative;margin-top:-5px;")
+
+                        let player = document.createElement("div")
+                        player.setAttribute("class", "bet_player")
+
+                        let elnick = document.createElement("div")
+                        elnick.setAttribute("class", "nick")
+                        elnick.textContent = nick;
+
+                        let elcoins = document.createElement("div")
+                        elcoins.setAttribute("class", "bet_coinsy_" + color)
+                        elcoins.textContent = coins;
+
+                        if (newbet == 'newbet') {
+                            player.setAttribute("id", "new")
+
+                        }
+                        player.appendChild(elnick)
+                        player.appendChild(elcoins)
+                        elcoins.appendChild(esenc)
+
+
+                        $(".bety_" + color).append(player)
+                        if (newbet == 'newbet') {
+                            $("#new").animate({
+                                opacity: 1
+                            }, 200)
+
+                        }
+
+                }
+            })
+            socket.on("balance_text", function (coins_profile) {
+                document.getElementById("obstaw_ilosc").value = parseInt(coins_profile);
+            })
+            $(".all").click(function () {
+                socket.emit("balance")
+            })
+
+            $(".send_message").on("click",function () {
+                let message = $(".input_message").val();
+                socket.emit("message",message)
+
+            })
+
+
+
+            if (typeof (Storage) !== "undefined") {
+                if (localStorage.getItem("loginstorage").length > 0) {
+                    socket.emit("zaloguj",localStorage.getItem("loginstorage"),localStorage.getItem("passwordstorage"),'localstorage')
+                }
+
+            }
+
+            $(".notify").on("click",function () {
+                $(".notify_circle").css("display","none")
+            })
+            function info() {
+                $(".info").animate({
+                    top:0
+                },500)
+                setTimeout(function(){
+                    $(".info").animate({
+                        top:-50
+                    },500)
+                },2500)
+            }
+
+
+
+        })
+
+</script>
+    <script>
+        function punkty(num,type) {
+            var obstaw = document.getElementById("obstaw_ilosc");
+            if(obstaw.value == ''){
+                obstaw.value = '0';
+                console.log('pusto')
+            }
+            if (type == 'dodawanie') {
+                var licz = parseInt(obstaw.value) + parseInt(num);
+                obstaw.value = licz;
+            }
+            if (type == 'mnozenie') {
+                var licz = parseInt(obstaw.value) * parseInt(num);
+                obstaw.value = licz;
+
+            }
+
+
+
+        }
+$(function () {
+    $(".przejdz_do_rejestracji").on("click",function () {
+        $("#rejestracja").css("width","100%")
+    })
+    $(".exit_register").on("click",function () {
+        $("#rejestracja").css("width","0%")
+    })
+})
+
+    </script>
+</head>
+        <body onselectstart="return false;">
+        <div class="info"><p class="info_text"></p></div>
+
+        <div class="menu">
+            <div class="logo"><img src="css/img/ruletka-icon.png" width="60px" height="60px" style="display: flex;margin:0;padding:0;float:left;padding-left:10px;"/><p>Lol-bets</p></div>
+
+            <div class="menu_profil">
+
+                <div class="user_info">
+                    <img class="head_profil" src="css/img/ornn-head.png" width="50px" height="50px" >
+                    <div class="nick_profil"></div>
+                    <div class="notify" id="notify" onclick="open_notify()">
+                    <i class="fas fa-bell"  id="fa-bell"></i>
+                        <div class="notify_circle"></div>
+                    </div>
+                    <button class="logout">Logout</button>
+                </div>
+                <div class="coins_profil"></div>
+            </div>
+            <div class="logowanie_rejestracja">
+                <div>
+                    <a href="logowanie/logowanie.html" class="zaloguj_">Zaloguj/Zarejestruj</a><br/>
+                </div>
+            </div>
+            <nav>
+                <a class="ruletka" href="/index.html" ><i class="fas fa-circle-notch  m_fas"></i>Ruletka<div id="check" style="position:absolute;right:10px;top:0;">O</div></a><br/>
+                <a class="poleminowe" href="/poleminowe/poleminowe.html" ><i class="fas fa-bomb  m_fas"></i>PoleMinowe</a><br/>
+                <a class="historia" href="/historia/historia.html" ><i class="fas fa-history  m_fas"></i>Historia</a>
+                <a class="regulamin" href="/regulamin/regulamin.html" ><i class="fas fa-clipboard m_fas"></i>Regulamin</a>
+            </nav>
+        </div>
+        <div class="notify_desc" id="notify_desc">
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 200 na green</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+
+
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+            <div class="notify_msg_container">
+                <div class="notify_msg">
+                    <p style="font-size: 12px;margin:0;">Obstawiłeś 20330 na red</p>
+                    <p style="font-size: 12px;margin:0;">12:25</p>
+                    <img src="css/img/esencja.png" width="35" height="35" style="position: absolute;right:2px;top:2px;"/>
+                </div>
+            </div>
+
+        </div>
+
+        <section id="container_roulette">
+         <div class="roulette">
+        <div id="roulette"  >
+            <div class="hash"></div>
+            <div class="timer" id="timer"></div>
+            <div class="rul">
+            <div class="items" id="items" style="background-position-x: -0px;">
+            <div class="wybierz"></div>
+            </div>
+            </div>
+            <div class="obstaw">
+                <input class="obstaw_ilosc" id="obstaw_ilosc" type="number" placeholder="wartość zakładu..." onfocus="this.placeholder = ''"  onblur="this.placeholder = 'wartość zakładu...'">
+                <div class="buttons_obstaw">
+                <div onclick="punkty(100,'dodawanie')">+100</div>
+                <div onclick="punkty(250,'dodawanie')">+250</div>
+                <div onclick="punkty(2,'mnozenie')">x2</div>
+                <div class="all">all</div>
+                </div>
+
+            </div>
+            <div class="lista" id="lista">
+            </div>
+            <div class="lista_betow">
+                <div class="lista_betow_red">
+                    <div class="lista_opis_red">
+                        <img src="css/img/ornn-head.png" width="40px" height="40px" style="float:left;">
+                        <button class="obstaw_red">OBSTAW(x2)</button>
+                        <img src="css/img/ornn-head.png" width="40px" height="40px" style="float:right;">
+                    </div>
+                    <div class="total_bets_red">
+                        <div class="all_on_red"></div>
+                        <div class="coins_on_red"></div>
+                    </div>
+                    <div class="bety_red">
+
+
+                    </div>
+                </div>
+                <div class="lista_betow_green">
+                    <div class="lista_opis_green">
+                        <img src="css/img/zac-head.png" width="40px" height="40px" style="float:left;">
+                        <button class="obstaw_green">OBSTAW(x14)</button>
+                        <img src="css/img/zac-head.png" width="40px" height="40px" style="float:right;">
+                    </div>
+                    <div class="total_bets_green">
+                        <div class="all_on_green"></div>
+                        <div class="coins_on_green"></div>
+                    </div>
+                    <div class="bety_green">
+
+                    </div>
+                </div>
+                <div class="lista_betow_black">
+                    <div class="lista_opis_black">
+                        <img src="css/img/aatrox-head.png" width="40px" height="40px" style="float:left;">
+                        <button class="obstaw_black">OBSTAW(x2)</button>
+                        <img src="css/img/aatrox-head.png" width="40px" height="40px" style="float:right;">
+                    </div>
+                    <div class="total_bets_black">
+                        <div class="all_on_black"></div>
+                        <div class="coins_on_black"></div>
+                    </div>
+                    <div class="bety_black">
+
+                    </div>
+                </div>
+            </div>
+
+            </div>
+         </div>
+        </section>
+        <div id="chat_button" onclick="chat(this)"><i class="far fa-comments"></i></div>
+        <section id="online">
+            <div id="chat">
+                <div class="chat_header"></div>
+                <div class="messages" id="messages">
+                    <div class="message">
+
+                        <img class="icon_message" src="css/img/zac-head.png" width="40px" height="40px">
+                        <div class="date_message"></div> <div class="nick_message">System</div>
+                        <p class="text_message">
+                            Witamy na czacie prosimy nie przeklinać! i miłej zabawy :)
+                        </p>
+                    </div>
+
+
+            </div>
+                <div class="write_message">
+                    <input class="input_message" placeholder="Wpisz wiadomość..." onfocus=" this.placeholder=''" onblur=" placeholder='Wpisz wiadomość...'" ><button class="send_message">Wyślij</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="audio">
+
+        </div>
+<script>
+    var open = "off";
+    function chat(btn) {
+        if(open == "off"){
+            $("#online").css("right","0px")
+            open = "on"
+            return;
+        }
+        if(open == "on"){
+            $("#online").css("right","-102%")
+            open = "off"
+        }
+    }
+
+    let notify_d = document.getElementById("notify_desc");
+    let x = 'open';
+   function open_notify() {
+
+       switch (x) {
+           case 'open':
+               notify_d.style.display = "block";
+               setTimeout(function () {
+                   notify_d.style.opacity = "1";
+                   notify_d.style.top = "70px"
+               },150);
+               x = 'close';
+               return;
+               break;
+           case 'close':
+               notify_d.style.opacity = "0";
+               notify_d.style.top = "90px";
+               setTimeout(function () {
+                   notify_d.style.display = "none"
+               },500);
+               x = 'open'
+       }
+    }
+</script>
+            </body>
+            </html>

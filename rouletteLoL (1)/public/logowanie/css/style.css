@@ -1,0 +1,227 @@
+body{
+    background-image: url("img/background_image.jpg");
+    background-size: cover;
+    overflow: hidden;
+}
+.ln_rr{
+    position: relative;
+    margin:auto;
+    left:0;
+    right:0;
+    top:180px;
+    width:250px;
+    height:225px;
+    transform: perspective(900px);
+    transform-style: preserve-3d;
+    transition:1s;
+
+
+}
+.checkbox_akceptuje_regulamin {
+    top: 0px;
+    display: flex;
+    float: left;
+}
+
+.checkbox_container{
+
+    margin: auto;
+    left:0;
+    right:0;
+    width:170px;
+    height: 20px;
+    cursor: pointer;
+    margin-top:5px;
+
+}
+.logowanie{
+    backface-visibility: hidden;
+    position: absolute;
+    width:100%;
+    height:100%;
+    text-align: center;
+    background: rgba(128, 64, 191,0.5);
+    box-shadow: 0px 0px 10px 3px rebeccapurple;
+    transform-style: preserve-3d;
+
+}
+.zaloguj_submit{
+    margin-top:10px;
+    background: #7339ac;
+    color:white;
+    width:170px;
+    height:30px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 3px 15px 1px purple;
+}
+
+
+.logowanie input::placeholder{
+    color:mediumpurple;;
+}
+.login{
+    margin-top:60px;
+}
+.password{
+    margin-top:10px;
+}
+.login,.password{
+    text-align: center;
+    background:rgba(170,0,255,0.4);
+    color:mediumpurple;
+    outline: none;
+    border: none;
+    width:200px;
+    height:30px;
+    box-shadow: 1px 0px 10px 0px purple;
+
+}
+.rejestracja{
+    position: absolute;
+    width:100%;
+    height:100%;
+    text-align: center;
+    backface-visibility: hidden;
+    background: rgba(128, 64, 191,0.5);
+    box-shadow: 0px 0px 10px 3px rebeccapurple;
+    transform-style: preserve-3d;
+    transform: rotateX(180deg);
+
+
+}
+.rejestruj_submit{
+    margin-top:5px;
+    background: #7339ac;
+    color:white;
+    width:170px;
+    height:30px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 2px 3px 15px 1px purple;
+
+}
+
+
+.rejestracja input::placeholder{
+    color:mediumpurple;;
+}
+.login_r{
+    margin-top:44px;
+}
+.password_r,.password_r2{
+    margin-top:10px;
+}
+.login_r,.password_r,.password_r2{
+    text-align: center;
+    background:rgba(170,0,255,0.4);
+    color:mediumpurple;
+    outline: none;
+    border: none;
+    width:200px;
+    height:30px;
+    box-shadow: 1px 0px 10px 0px purple;
+
+}
+
+.info{
+    position: absolute;
+    top:-50px;
+    width:300px;
+    height:50px;
+    background:-webkit-linear-gradient(top right,rgba(20, 82, 20,0.6),rgba(41, 163, 41,0.6),rgba(20, 82, 20,0.6));
+    border-bottom-left-radius:20px;
+    border-bottom-right-radius:20px;
+    margin:auto;
+    left:0;
+    right:0;
+    z-index: 1;
+    font-family:cursive,Arial,sans-serif;;
+    color:white;
+    display:table;
+
+
+
+
+}
+.info_text{
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+}
+.back{
+    position: absolute;
+    width:20px;
+    height: 20px;
+    z-index: 1;
+    left:80px;
+    top:60px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity:1;
+}
+
+.back:after{
+    content:'Powrót';
+    color:white;
+    font-weight:600;
+    position: absolute;
+    font-family: Arial;
+    font-size:25px;
+    opacity:0.8;
+
+
+}
+
+.wybierz{
+    position: absolute;
+    margin: auto;
+    left:0;
+    right:0;
+    width:280px;
+    height:50px;
+    background:rgba(150,60,150,.4);
+    top:120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size:25px;
+    font-family: cursive,arial,sans-serif;
+    color:purple;
+    box-shadow: 1px 0px 10px 0px purple;
+    cursor: pointer;
+
+}
+.wybierz > div {
+    padding: 9px;
+
+}
+.wybierz > div:hover{
+    font-size:26px;
+}
+input[type=submit]:hover{
+    width:180px ;
+    height:35px;
+}
+input[type=password]:hover{
+    width:205px;
+    height:33px;
+}
+.login:hover,.login_r:hover{
+    width:205px;
+    height: 33px;
+}
+
+.wskaznik{
+    position:absolute;
+
+    width:120px;
+    height: 5px;
+    background: purple;
+    border-radius:50px;
+    bottom:0;
+    left:0;
+    transition: 1s;
+}
