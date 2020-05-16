@@ -26,13 +26,13 @@ var MD5 = function(d){result = M(V(Y(X(d),8*d.length)));return result.toLowerCas
 //lączenie z bazą
 var con = mysql.createConnection({
 
-    host: "remotemysql.com",
+    host: "your host",
 
-    user: "UR7jKe28rw",
+    user: "user",
 
-    password: "lpJ9foJRWF",
+    password: "password",
 
-    database: "UR7jKe28rw"
+    database: "databasename"
 
 });
 
