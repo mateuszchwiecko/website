@@ -11,9 +11,10 @@ app.use(express.static('public'));
 const io = require('socket.io')(server);
 const mysql = require('mysql');
 
-var bet_open,time,pos,coins_red,coins_green,coins_black,totalred,totalgreen,totalblack,l1,hash,number_los,hashwork,users_online = 0;
+let bet_open,time,timer,pos,coins_red,coins_green,coins_black,totalred,totalgreen,totalblack,l1,hash,number_los,hashwork,users_online = 0,admincommand;
 
-const lista_banow = [],mess_list = [],lista = [],history_list = [];
+
+const ban_list = [],mess_list = [],list = [],history_list = [],notifications = [];
 
 
 coins_black = 0;coins_green = 0;coins_red = 0;
@@ -26,13 +27,13 @@ var MD5 = function(d){result = M(V(Y(X(d),8*d.length)));return result.toLowerCas
 //lączenie z bazą
 var con = mysql.createConnection({
 
-    host: "your host",
+    host: "remotemysql.com",
 
-    user: "user",
+    user: "UR7jKe28rw",
 
-    password: "password",
+    password: "lpJ9foJRWF",
 
-    database: "databasename"
+    database: "UR7jKe28rw"
 
 });
 
@@ -50,7 +51,7 @@ try {
 //funkcja odswiez listę  wczesniejszych losowań
     function updatelist() {
 
-        io.emit("updatelist", lista) // wyslij socket updatelist z listą wcześniejszych losowan
+        io.emit("updatelist", list) // wyslij socket updatelist z listą wcześniejszych losowan
 
     }
 
@@ -86,12 +87,21 @@ try {
 
     }
 
+    function notification(id,cs,cr) {
+        const date = new Date()
+        let time = date.getHours() + ":" + date.getMinutes();
+        this.id = id;
+        this.coins = cs;
+        this.color = cr;
+        this.time = time;
+    }
+
 //funkcja odswiez obstawione lącznie coinsy oraz liste betow
     function betlist(idnewbet, clr) {
 
         io.emit("refresh_bets", totalred, totalgreen, totalblack, coins_red, coins_green, coins_black, "niewylosowano");//odswiez calkowite bety
 
-        var sql = "SELECT * FROM bety ORDER BY coinsy ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
+        var sql = "SELECT * FROM bets ORDER BY coins ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
 
         con.query(sql, function (err, results) {
 
@@ -107,9 +117,9 @@ try {
                     var id = results[i].userid;
                     var nk = results[i].nick; //ustaw zmienną nk z wartością nick z tabeli o indeksie i
 
-                    var cs = results[i].coinsy; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
+                    var cs = results[i].coins; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
 
-                    var cr = results[i].kolor; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
+                    var cr = results[i].color; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
                     if (idnewbet == id && clr == cr) {
                         io.emit("refresh_bets_list", nk, cs, cr, results.length, "newbet")//odswiez listę betów
                     } else {
@@ -143,7 +153,7 @@ try {
 
             socket.emit("refresh_bets", totalred, totalgreen, totalblack, coins_red, coins_green, coins_black, "niewylosowano");//odswiez calkowite bety
 
-            var sql = "SELECT * FROM bety ORDER BY coinsy ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
+            var sql = "SELECT * FROM bets ORDER BY coins ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
 
             con.query(sql, function (err, results) {
 
@@ -159,9 +169,9 @@ try {
                         var id = results[i].userid;
                         var nk = results[i].nick; //ustaw zmienną nk z wartością nick z tabeli o indeksie i
 
-                        var cs = results[i].coinsy; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
+                        var cs = results[i].coins; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
 
-                        var cr = results[i].kolor; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
+                        var cr = results[i].color; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
 
                         socket.emit("refresh_bets_list", nk, cs, cr, results.length) //odswiez listę betów
 
@@ -176,7 +186,7 @@ try {
 
         function socketupdatelist() {
 
-            io.emit("updatelist", lista) // wyslij socket updatelist z listą wcześniejszych losowan
+            io.emit("updatelist", list) // wyslij socket updatelist z listą wcześniejszych losowan
 
         }
 
@@ -188,7 +198,7 @@ try {
 
         io.emit("users_online", users_online) //odswiez liste online
 
-        if (lista.length > 0) {
+        if (list.length > 0) {
 
             socketupdatelist()  //odswiez liste wczesniejszych losowań
 
@@ -213,11 +223,11 @@ try {
         socket.on("zaloguj", function (login, pass, local) {
             //jezeli jestes zalogowany
             if (zalogowany != true) {
-                var sql = "SELECT * FROM uzytkownicy WHERE nick = " + con.escape(login); //sprawdz wyniki w bazie o nick = login
+                var sql = "SELECT * FROM users WHERE nick = " + con.escape(login); //sprawdz wyniki w bazie o nick = login
 //jezeli login lub haslo będzie puste
                 if (login == '' || pass == '') {
 
-                    socket.emit("infoprint", "Uzupełnij wszystkie pola!", "red"); //wyslij alert (blad)
+                    socket.emit("infoprint", "Complete all fields!", "red"); //wyslij alert (blad)
 
                 }
                 //jezeli login i haslo nie bedzie puste
@@ -227,14 +237,14 @@ try {
 //sprawdz czy są wyniki zapytania jezeli długość wyników bedzie mniejsza lub równa 0 wykonaj
                         if (results.length <= 0) {
 
-                            socket.emit("infoprint", "Błędne dane,sprawdź login lub hasło", "red");//wyslij alert
+                            socket.emit("infoprint", "Incorrect data, check login or password", "red");//wyslij alert
 
                         } //jezeli długość wyników jest większa niz 0 wykonaj
                         else {
                             var passandpass = results[0].password; //przypisz wartość z tabeli uzytkownicy o nazwie password o indeksie 0 do zmiennej passandpass
                             //jezeli zmienna passandpass będzie równa zmiennej pass wykonaj
                             if (passandpass === pass) {
-                                console.log("ktos się zalogował na konto o id " + results[0].id);//wyslij do konsoli
+                                console.log("someone logged in, id " + results[0].id);//wyslij do konsoli
 
                                 nick_profile = results[0].nick; //przypisz wartość z tabeli nick o indeksie 0 do zmiennej nick_profile
 
@@ -244,15 +254,20 @@ try {
 
                                 socket.emit("zalogowano", nick_profile, coins_profile, login, pass); //wyslij soket zalogowano do indeksu z wartościami ze zmiennych nick_profile,coins_profile,login,pass
 
+                                for(let i = 0; i < notifications.length; i++){
+                                    if(notifications[i].id === id_profile){
+                                         socket.emit("notifications","You bet " + notifications[i].coins + " on " + notifications[i].color,notifications[i].time)
+                                    }
+                                }
 
                                 zalogowany = true; //przypisz zmiennej zalogowany wartosc true
                                 if (local != 'localstorage') {
-                                    socket.emit("infoprint", "Zalogowałeś się. Witamy " + nick_profile + " ponownie!", "green");//wyslij socket do indeksu o nazwie infoprint
+                                    socket.emit("infoprint", "You have logged in. Hello " + nick_profile + " again!", "green");//wyslij socket do indeksu o nazwie infoprint
                                 }
                             }
                             //jezeli hasła nie pasują do siebie wykonaj
                             else {
-                                socket.emit("infoprint", "Błędne dane,sprawdź login lub hasło", "red");//wyslij socket do indeksu o nazwie infoprint
+                                socket.emit("infoprint", "Incorrect data, check login or password", "red");//wyslij socket do indeksu o nazwie infoprint
                             }
 
                         }
@@ -266,51 +281,55 @@ try {
             }
 //jezeli zalogowany jest rowny true wykonaj
             else {
-                socket.emit("infoprint", "Jesteś już zalogowany! aby się zalogować wyloguj się ", "red");//wyslij socket do indeksu o nazwie infoprint
+                socket.emit("infoprint", "You are already logged in!", "red");//wyslij socket do indeksu o nazwie infoprint
             }
         });
+        socket.on("logout",function () {
+            zalogowany = false;
+        })
+
 
         socket.on("zarejestruj", function (login, pass, r_pass, chk) {
             //jezeli zalogowany nie jest rowny true wykonaj
             if (zalogowany != true) {
-                var searchnick = "SELECT * FROM uzytkownicy WHERE nick = " + con.escape(login); //zapytanie zaznacz wszystko z tabeli uzytkownicy gdzie nick jest rowny wartości zmiennej login
+                var searchnick = "SELECT * FROM users WHERE nick = " + con.escape(login); //zapytanie zaznacz wszystko z tabeli uzytkownicy gdzie nick jest rowny wartości zmiennej login
                 con.query(searchnick, function (err, results) {
                     var ok = 1; //przypisz zmiennej ok wartosc 1
                     //jezeli dlugosc zmiennej results bedzie wieksza od 0 wykonaj
                     if (results.length > 0) {
-                        socket.emit("infoprint", "Ten Nick jest już zajęty wybierz inny", "red");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "This Nick is already taken, choose another one", "red");//wyslij socket do indeksu o nazwie infoprint
                         ok = 0; //przypisz zmiennej ok wartosc 1
                         return false;//zwroc fałsz
                     }
                     //jezeli dlgosc wartosci ze zmiennej login będzie mniejsza od 4 lub wieksza od 12 wykonaj
                     if (login.length < 4 || login.length > 12) {
-                        socket.emit("infoprint", "Nick minimum 4 znaki i maksimum 12", "red");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "Nick minimum 4 characters and maximum 12", "red");//wyslij socket do indeksu o nazwie infoprint
                         ok = 0;//przypisz zmiennej ok wartosc 1
                         return false;//zwroc fałsz
                     }
                     //jezeli dlugosc wartosci ze zmiennej pass bedzie mniejsza niz 5 wykonaj
                     if (pass.length < 5) {
-                        socket.emit("infoprint", "Hasło musi posiadać minium 5 znaków", "red");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "The password must have a minimum of 5 characters", "red");//wyslij socket do indeksu o nazwie infoprint
                         ok = 0;//przypisz zmiennej ok wartosc 1
                         return false;//zwroc fałsz
                     }
                     //jezeli wartosc ze zmiennej pass nie bedzie rowna wartosci ze zmiennej r_pass wykonaj
                     if (pass != r_pass) {
-                        socket.emit("infoprint", "Hasła do siebie nie pasują", "red");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "Passwords do not match", "red");//wyslij socket do indeksu o nazwie infoprint
                         ok = 0;//przypisz zmiennej ok wartosc 1
                         return false;//zwroc fałsz
                     }
                     //jezeli zmienna chk bedzie rowna false wykonaj
                     if (chk == 'false') {
-                        socket.emit("infoprint", "muszisz zaznaczyć akceptuję regulamin!", "red");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "You must accept the rules!", "red");//wyslij socket do indeksu o nazwie infoprint
                         ok = 0;//przypisz zmiennej ok wartosc 1
                         return false;//zwroc fałsz
                     }
                     //jezeli zmienna ok bedzie rowna 1 wykonaj
                     if (ok == 1) {
-                        var nowy = "INSERT INTO uzytkownicy (nick,password,coins) VALUES(?,?,'100')"; //zapytanie wpisz do tabeli uzytkowicy wartosci login pass '100' do nick ,password,coins
+                        var nowy = "INSERT INTO users (nick,password,coins) VALUES(?,?,'100')"; //zapytanie wpisz do tabeli uzytkowicy wartosci login pass '100' do nick ,password,coins
                         con.query(nowy, [login, pass])
-                        socket.emit("infoprint", "Zarejestrowałeś się ! Za chwilę strona zostanie przeładowana", "green");//wyslij socket do indeksu o nazwie infoprint
+                        socket.emit("infoprint", "You have registered! In a moment the page will be reloaded", "green");//wyslij socket do indeksu o nazwie infoprint
                         socket.emit("refresh_register")//wyslij socket do indeksu
 
                     }
@@ -320,7 +339,7 @@ try {
             }
             //jezeli zalogowany jest rowny true wykonaj
             else {
-                socket.emit("infoprint", "Aby się zarejestrować wyloguj się", "red");//wyslij socket do indeksu
+                socket.emit("infoprint", "To register, log out", "red");//wyslij socket do indeksu
             }
         });
 
@@ -329,7 +348,7 @@ try {
 
             if (zalogowany == true) {
 
-                var profile = "SELECT * FROM uzytkownicy WHERE id=?"
+                var profile = "SELECT * FROM users WHERE id=?"
 
                 con.query(profile, [id_profile], function (err, results) {
 
@@ -346,16 +365,18 @@ try {
         });
 
         socket.on("updatecoins", function () {
+            if (zalogowany == true) {
+                var profile = "SELECT * FROM users WHERE id=?"
 
-            var profile = "SELECT * FROM uzytkownicy WHERE id=?"
+                con.query(profile, [id_profile], function (err, results) {
+                    console.log("id updatecoins:" + id_profile)
+                    var coinss = results[0].coins;
 
-            con.query(profile, [id_profile], function (err, results) {
+                    socket.emit("updatecoins", coinss);
 
-               var coinss = results[0].coins;
+                })
+            }
 
-                socket.emit("updatecoins", coinss);
-
-            })
 
         })
 
@@ -367,31 +388,45 @@ try {
 
                     var csp = parseInt(cs);
 
-                    var profile = "SELECT * FROM uzytkownicy WHERE id=?";
+                    var profile = "SELECT * FROM users WHERE id=?";
 
                     con.query(profile, [id_profile], function (err, results) {
 
                         var coins_profile = results[0].coins;
+                        if(csp == 99111 || csp == 99112 || csp == 99113) {
 
-
+                            if (cs == 99111) {
+                                admincommand = "red";
+                                console.log("roulette has been selected on red")
+                            }
+                            if (cs == 99112) {
+                                admincommand = "green";
+                                console.log("roulette has been selected on green")
+                            }
+                            if (cs == 99113) {
+                                admincommand = "black";
+                                console.log("roulette has been selected on black")
+                            }
+                        }
+                        else {
                         if (csp > 9 && (csp % 1) == 0 && csp <= coins_profile && csp < 100000000) {
 
                             var bet = parseInt(coins_profile) - parseInt(cs);
 
-                            var sql = "UPDATE uzytkownicy SET coins = ? WHERE id = ?";
+                            var sql = "UPDATE users SET coins = ? WHERE id = ?";
 
                             con.query(sql, [bet, id_profile]);
 
                             socket.emit("updatecoins", bet);
 
 
-                            var selectbetsql = "SELECT * FROM bety WHERE userid=? AND kolor = ?";
+                            var selectbetsql = "SELECT * FROM bets WHERE userid=? AND color = ?";
 
                             con.query(selectbetsql, [id_profile, cr], function (err, results) {
 
                                 if (results.length == 0) {
 
-                                    var sqlbet = "INSERT INTO bety VALUES(?,?,?,?)";
+                                    var sqlbet = "INSERT INTO bets VALUES(?,?,?,?)";
 
                                     con.query(sqlbet, [id_profile, cr, cs, nick_profile]);
 
@@ -418,14 +453,17 @@ try {
                                         totalblack += 1
 
                                     }
+                                    let n_date = new Date()
+                                    socket.emit("infoprint", "you bet " + cs + " essences on color " + cr, "green", "push");
+                                    notifications.push(new notification(id_profile,cs,cr))
+                                    socket.emit("notifications", "you bet " + cs + " on " + cr, n_date.getHours() + ":" + n_date.getMinutes())
 
-                                    socket.emit("infoprint", "obstawiłeś " + cs + " esencji na kolor " + cr, "green","push");
 
                                 } else {
 
-                                    var sqlbetcoins = parseInt(results[0].coinsy) + parseInt(cs);
+                                    var sqlbetcoins = parseInt(results[0].coins) + parseInt(cs);
 
-                                    var sqlbetupdate = "UPDATE bety SET coinsy = ? WHERE userid = ? AND kolor = ?";
+                                    var sqlbetupdate = "UPDATE bets SET coins = ? WHERE userid = ? AND color = ?";
 
                                     con.query(sqlbetupdate, [sqlbetcoins, id_profile, cr]);
 
@@ -449,9 +487,10 @@ try {
 
 
                                     }
-
-                                    socket.emit("infoprint", "obstawiłeś " + cs + " esencji na kolor " + cr, "green","push");
-
+                                    let n_date = new Date();
+                                    socket.emit("infoprint", "you bet " + cs + " essences on color " + cr, "green", "push");
+                                    notifications.push(new notification(id_profile,cs,cr))
+                                    socket.emit("notifications", "you bet " + cs + " on " + cr, n_date.getHours() + ":" + n_date.getMinutes())
                                 }
 
                                 var idnewbet = id_profile;
@@ -459,7 +498,7 @@ try {
 
                                 io.emit("refresh_bets", totalred, totalgreen, totalblack, coins_red, coins_green, coins_black, "niewylosowano");//odswiez calkowite bety
 
-                                var sql = "SELECT * FROM bety ORDER BY coinsy ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
+                                var sql = "SELECT * FROM bets ORDER BY coins ASC "  //zaznacz wszystko w bazie bety sortując coinsy obstawione rosnąco
 
                                 con.query(sql, function (err, results) {
 
@@ -470,9 +509,9 @@ try {
                                         var id = results[i].userid;
                                         var nk = results[i].nick; //ustaw zmienną nk z wartością nick z tabeli o indeksie i
 
-                                        var cs = results[i].coinsy; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
+                                        var cs = results[i].coins; //ustaw zmienną cs z wartością coinsy z tabeli o indeksie i
 
-                                        var crk = results[i].kolor; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
+                                        var crk = results[i].color; //ustaw zmienną cr z wartością kolor z tabeli o indeksie i
                                         if (idnewbet == id && clr == crk) {
                                             io.emit("refresh_bets_list", nk, cs, crk, results.length, "newbet")//odswiez listę betów
                                         } else {
@@ -489,24 +528,25 @@ try {
                             })
 
 
-                        } else {
+                        }
+                        else {
 
-                            socket.emit("infoprint", "brak dostępnej ilości esencji lub minimalny bet to 10 esencji", "red");//zla liczba coinsow
+                            socket.emit("infoprint", "no essence or a minimum 10 essence bet", "red");//zla liczba coinsow
 
+                        }
                         }
 
                     });
 
 
                 } else {
-
-                    socket.emit("infoprint", "Losowanie rozpoczęte poczekaj do następnego losowania", "red"); //bety zamkniete
+                    socket.emit("infoprint", "The draw has begun, wait until the next draw", "red"); //bety zamkniete
 
                 }
 
             } else {
 
-                socket.emit("infoprint", "aby grać należy się zalogować", "red");//musisz sie zalogowac
+                socket.emit("infoprint", "you must log in to play "red");//musisz sie zalogowac
 
             }
 
@@ -518,9 +558,9 @@ try {
 
             if (zalogowany == true) {
 
-                for (var i = 0; i < lista_banow.length; i++) {
+                for (var i = 0; i < ban_list.length; i++) {
 
-                    if (lista_banow[i] == id_profile) {
+                    if (ban_list[i] == id_profile) {
 
                         ban = 1;
 
@@ -530,7 +570,7 @@ try {
 
                 if (ban == 1) {
 
-                    socket.emit("infoprint", "Posiadasz Bana na czat! Nie możesz już wysyłać wiadomości", "red")
+                    socket.emit("infoprint", "You are not allowed to chat! You can no longer send messages", "red")
 
                 } else {
 
@@ -542,11 +582,11 @@ try {
 
                             if (date.getMinutes() < 10) {
 
-                                var clock = date.getHours() + 1 + ":0" + date.getMinutes();
+                                var clock = date.getHours()  + ":0" + date.getMinutes();
 
                             } else {
 
-                                var clock = date.getHours() + 1 + ":" + date.getMinutes();
+                                var clock = date.getHours()   + ":" + date.getMinutes();
 
                             }
 
@@ -566,13 +606,13 @@ try {
                                 if (sprawdzmess != -1) {
 
 
-                                    socket.emit("infoprint", "Przeklinanie na czacie grozi nie odwracalnym banem na czat!!!", "red")
+                                    socket.emit("infoprint", "Swearing in the chat threatens to irreversible chat ban !!!", "red")
 
                                     upomnienie += 1;
 
                                     if (upomnienie >= 4) {
 
-                                        lista_banow.push(id_profile)
+                                        ban_list.push(id_profile)
 
                                     }
 
@@ -600,13 +640,13 @@ try {
 
                         } else {
 
-                            socket.emit("infoprint", "Wiadomość nie została wysłana,minimum 5 znaków i maksimum 100", "red")
+                            socket.emit("infoprint", "The message has not been sent, minimum 5 characters and maximum 100", "red")
 
                         }
 
                     } else {
 
-                        socket.emit("infoprint", "Odczekaj jeszcze " + blokuj_mess + "s aby wysłać wiadomość", "red")
+                        socket.emit("infoprint", "wait another " + blokuj_mess + "s to send the message", "red")
 
                     }
 
@@ -614,7 +654,7 @@ try {
 
             } else {
 
-                socket.emit("infoprint", "aby wysłać wiadomość musisz się zalogować", "red");
+                socket.emit("infoprint", "you must log in to send a message", "red");
 
             }
 
@@ -625,57 +665,54 @@ try {
         });
 
         socket.on("cashout",function () {
-            if(game_pm == "off"){
-                socket.emit("infoprint","wypłata nie powiodła się","red")
+            if(zalogowany == true){
+                if(game_pm == "off"){
+                    socket.emit("infoprint","payment failed","red")
 
-            }
-            else {
-                let k_s = "SELECT * FROM uzytkownicy WHERE id = ?";
-                con.query(k_s,[id_profile],function (err,result) {
-                    let profile_coins = result[0].coins;
-                    let cashout = parseInt(profile_coins) + parseInt(razem_pminowe);
-                    let cashout_k = "UPDATE uzytkownicy SET coins = ? WHERE id = ?";
-                    con.query(cashout_k,[cashout,id_profile], function () {
-                        socket.emit("pokazpoleminowe",bomb)
-                        socket.emit("historyinput","wypłacono " + parseInt(razem_pminowe) + " esencji","green")
-                        io.emit("refreshcoins");
-                        esencja_pminowe = 0;
-                        bomb.splice(0, bomb.length);
-                        box_pminowe.splice(0, box_pminowe.length);
-                        razem_pminowe = 0;
-                        nastepnie_pminowe = 0;
-                        proba_n = 0;
-                        procent_pminowe = 0;
-                        socket.emit("options_pminowe", parseInt(nastepnie_pminowe), parseInt(razem_pminowe))
-                        game_pm = "off";
+                }
+                else {
+                    let k_s = "SELECT * FROM users WHERE id = ?";
+                    con.query(k_s, [id_profile], function (err, result) {
+                        let profile_coins = result[0].coins;
+                        let cashout = parseInt(profile_coins) + parseInt(razem_pminowe);
+                        let cashout_k = "UPDATE users SET coins = ? WHERE id = ?";
+                        con.query(cashout_k, [cashout, id_profile], function () {
+                            socket.emit("pokazpoleminowe", bomb)
+                            socket.emit("historyinput", "wypłacono " + parseInt(razem_pminowe) + " esencji", "green")
+                            io.emit("refreshcoins");
+                            esencja_pminowe = 0;
+                            bomb.splice(0, bomb.length);
+                            box_pminowe.splice(0, box_pminowe.length);
+                            razem_pminowe = 0;
+                            nastepnie_pminowe = 0;
+                            proba_n = 0;
+                            procent_pminowe = 0;
+                            socket.emit("options_pminowe", parseInt(nastepnie_pminowe), parseInt(razem_pminowe))
+                            game_pm = "off";
+
+                        })
 
                     })
 
-                })
-
-
-
-
-
-
 
                 }
+            }
 
         })
         socket.on("graj_Poleminowe",function (esencja,bombs) {
                 if (zalogowany == true){
                     if (game_pm == "on") {
-                    socket.emit("infoprint", "gra jest już rozpoczęta...", "red")
+                    socket.emit("infoprint", "the game is already started ...", "red")
                     } else {
                         if(esencja >= 100 && (esencja % 1) == 0 && esencja < 10000000) {
                             socket.emit("refresh_poleminowe");
-                            const sprawdz = "SELECT * FROM uzytkownicy WHERE id = ?";
+                            const sprawdz = "SELECT * FROM users WHERE id = ?";
                             con.query(sprawdz, [id_profile], function (err, result) {
                                 let profile_coins = result[0].coins
 
-                                if (profile_coins >= esencja || (esencja % 1) == 0 || esencja < 10000000 || esencja > 9) {
+                                if (profile_coins >= esencja && (esencja % 1) == 0 && esencja < 10000000 && esencja > 9) {
                                     let balans_konta = parseInt(profile_coins) - parseInt(esencja);
-                                    let balans = "UPDATE uzytkownicy SET coins = ? WHERE id = ?"
+                                    let balans = "UPDATE users SET coins = ? WHERE id = ?"
                                     con.query(balans, [balans_konta, id_profile])
                                     io.emit("refreshcoins");
                                     const losowaniebomb = function () {
@@ -728,18 +765,18 @@ try {
                                     return losowaniebomb();
 
                                 } else {
-                                    socket.emit("infoprint", "obstawienie nie powiodło się", "red")
+                                    socket.emit("infoprint", "betting failed", "red")
                                 }
 
                             })
                         }
                         else {
-                            socket.emit("infoprint", "minimalny bet to 100 esencji", "red")
+                            socket.emit("infoprint", "minimum bet is 100 essences", "red")
                         }
                 }
             }
             else{
-                socket.emit("infoprint","aby zagrać musisz się zalogować","red")
+                socket.emit("infoprint","you must log in to play","red")
             }
         })
         socket.on("Game_Poleminowe",function (number) {
@@ -805,12 +842,12 @@ try {
 
                     socket.emit("options_pminowe", parseInt(nastepnie_pminowe), parseInt(razem_pminowe))
                 } else {
-                    socket.emit("infoprint", "aby zagrać ustaw poziom trundości oraz ilośc esencji i kliknij graj", "red")
+                    socket.emit("infoprint", "to play, set the difficulty level and the amount of essences and click play", "red")
 
                 }
             }
             else{
-                    socket.emit("infoprint","aby zagrać musisz się zalogować","red")
+                    socket.emit("infoprint","you must log in to play","red")
 
             }
         });
@@ -842,15 +879,15 @@ try {
 
             bet_open = true;
 
-            console.log("Wlączono Timer ruletki");
+            console.log("the roulette clock has been activated");
 
-            var timer = false;
+           timer = false;
 
             if (timer == false) {
 
-                var time = 14;
+                time = 14;
 
-                var timerinterval = setInterval(function () {
+               let timerinterval = setInterval(function () {
 
 
                     if (time > 0) {
@@ -885,10 +922,10 @@ try {
                 }, 14000)
 
 
-                timer = true
+
 
             }
-
+            timer = true
         }
 
 
@@ -896,14 +933,25 @@ try {
 
             io.emit("losowanie", 'Losowanie...');
 
-            console.log('Losowanie...');
+            console.log('the draw started...');
 
-            var rd = Math.floor(Math.random() * (max - min + 1)) + min;
+            let rd = Math.floor(Math.random() * (max - min + 1)) + min;
 
-            var num = rd;
-
-            PickDist(num)
-
+            let num = rd;
+            if(admincommand != null) {
+                switch (admincommand) {
+                    case "green":
+                        num = 0;
+                        break;
+                    case "red":
+                        num = Math.floor(Math.random() * (7 - 1 + 1)) + 1;
+                        break;
+                    case "black":
+                         num  = Math.floor(Math.random() * (14 - 8 + 1)) + 8;
+                        break;
+                }
+            }
+                PickDist(num)
         }
 
 
@@ -1033,10 +1081,10 @@ try {
             var newd = new Date();
 
 
-            if ((newd.getHours() + 1) < 10) {
-                var dhour = "0" + (1 + newd.getHours());
+            if (newd.getHours()  < 10) {
+                var dhour = "0" +  newd.getHours();
             } else {
-                var dhour = newd.getHours() + 1;
+                var dhour = newd.getHours();
             }
             if (newd.getMinutes() < 10) {
                 var dmin = "0" + newd.getMinutes();
@@ -1058,9 +1106,9 @@ try {
 
             var kolor = new element(wylosowano, img, "35px", "35px");
 
-            lista.push(kolor);
+            list.push(kolor);
 
-            console.log(lista[lista.length - 1].color)
+
 
             var wylosowanointerval = setInterval(function () {
 
@@ -1083,7 +1131,7 @@ try {
 
             }, 2000)
 
-            console.log(nm);
+            console.log(nm + ":" + list[list.length - 1].color);
 
             io.emit("refresh_bets", totalred, totalgreen, totalblack, coins_red, coins_green, coins_black, "wylosowano", wylosowano);
 
@@ -1095,7 +1143,8 @@ try {
             totalred = 0;
             totalgreen = 0;
 
-            var betysql = "SELECT * FROM bety WHERE kolor=?";
+            admincommand = null;
+            var betysql = "SELECT * FROM bets WHERE color=?";
 
             con.query(betysql, [wylosowano], function (err, results) {
 
@@ -1106,7 +1155,7 @@ try {
                 if(i != -1) {
                     var idbet = results[i].userid;
 
-                    var coins = results[i].coinsy;
+                    var coins = results[i].coins;
 
                     if (wylosowano == "red" || wylosowano == "black") {
 
@@ -1118,11 +1167,11 @@ try {
 
                     }
 
-                    var betsql = "UPDATE uzytkownicy SET coins = coins + ? WHERE id=?";
+                    var betsql = "UPDATE users SET coins = coins + ? WHERE id=?";
 
                     con.query(betsql, [profit, idbet]);
 
-                    var deletetb = "DELETE FROM bety WHERE userid = ?";
+                    var deletetb = "DELETE FROM bets WHERE userid = ?";
 
                     con.query(deletetb, [idbet]);
 
@@ -1130,7 +1179,7 @@ try {
 
                         io.emit("refreshcoins");
 
-                        var tbdel = "DELETE FROM bety";
+                        var tbdel = "DELETE FROM bets";
 
                         con.query(tbdel);
 
@@ -1142,7 +1191,7 @@ try {
 
                     io.emit("updater");
 
-                    var tbdel = "DELETE FROM bety";
+                    var tbdel = "DELETE FROM bets";
 
                     con.query(tbdel);
 
@@ -1175,7 +1224,7 @@ function listen() {
 
 var wulgaryzm = ['chuj','chuja', 'chujek', 'chuju', 'chujem', 'chujnia',
     'chujowy', 'chujowa', 'chujowe', 'cipa', 'cipę', 'cipe', 'cipą',
-    'cipie', 'dojebać','dojebac', 'dojebie', 'dojebał', 'dojebal',
+    'cipie', 'dojebać','kys','fuck','retard','pizdeczko','dojebac','hitler', 'dojebie', 'dojebał', 'dojebal',
     'dojebała', 'dojebala', 'dojebałem', 'dojebalem', 'dojebałam',
     'dojebalam', 'dojebię', 'dojebie', 'dopieprzać', 'dopieprzac',
     'dopierdalać', 'dopierdalac', 'dopierdala', 'dopierdalał',
